@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Minecraft Enchantments Checklist (1.21+, JE & BE)</title>
+<style>
+  :root{
+    --bg: radial-gradient(1200px 800px at 10% 0%, #6ee7ff33, transparent 60%),
+          radial-gradient(900px 600px at 90% 30%, #a78bfa33, transparent 60%),
+          linear-gradient(180deg,#0b1020,#0a0f19 55%, #070c15);
+    --glass: rgba(255,255,255,0.08);
+    --glass-strong: rgba(255,255,255,0.12);
+    --border: rgba(255,255,255,0.25);
+    --txt: #eaf2ff;
+    --muted: #b8c4e0;
+    --accent: #7cf7d1;
+    --accent-2: #a5b4fc;
+    --danger: #ff7b7b;
+    --ok: #78f7a2;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .light {
+    --bg: radial-gradient(1400px 900px at 15% -10%, #a5f3fc66, transparent 60%),
+          radial-gradient(1000px 700px at 80% 0%, #c4b5fd66, transparent 60%),
+          linear-gradient(180deg,#f8fbff,#edf2ff 60%, #e9efff);
+    --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.75);
+    --border: rgba(10, 20, 55, 0.12);
+    --txt: #0a152e;
+    --muted: #405172;
+    --accent: #0ea5e9;
+    --accent-2: #7c3aed;
+    --danger: #d94646;
+    --ok: #16a34a;
+    --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; font-family: "Inter", sans-serif; }
+  html, body { height: 100% }
+  body {
+    margin:0;
+    color:var(--txt);
+    font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+    background: var(--bg) fixed;
+    background-size: cover;
+  }
+
+  .wrap{ min-height:100vh; display:flex; flex-direction:column; gap:16px; padding: clamp(16px, 2.5vw, 28px); }
+  header.appbar{ position: sticky; top: 0; z-index: 10; backdrop-filter: blur(16px) saturate(120%); background: var(--glass); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 18px; padding: 12px 16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .logo{ width:38px; height:38px; border-radius:12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: inset 0 0 0 2px #ffffff33, 0 8px 18px #0000003a; display:grid; place-items:center; color:#08121d; font-weight:900; }
+  .brand h1{ margin:0; font-size: clamp(16px, 2.2vw, 22px); letter-spacing:.2px; }
+  .controls{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+  .btn, select{ appearance:none; border-radius:12px; border:1px solid var(--border); background: var(--glass-strong); color: var(--txt); padding:10px 12px; font-weight:600; cursor:pointer; box-shadow: var(--shadow); }
+  .btn.small{ padding:8px 10px; font-size: 14px; }
+
+  .legend{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:10px 12px; border-radius:14px; background: var(--glass); border:1px solid var(--border); }
+  .pill{ font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted) }
+
+  main{ display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; }
+  @media (max-width: 1200px){ main{ grid-template-columns: repeat(8, 1fr); } }
+  @media (max-width: 800px){ main{ grid-template-columns: repeat(4, 1fr); } }
+
+  .card{ grid-column: span 6; display:flex; flex-direction:column; gap:10px; padding:16px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); backdrop-filter: blur(16px) saturate(140%); }
+  @media (max-width:800px){ .card{ grid-column: span 4; } }
+  .card h2{ margin:0; font-size: clamp(17px, 2vw, 20px); display:flex; align-items:center; gap:10px; }
+  .badge{ font-size:12px; font-weight:800; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background: linear-gradient(180deg, #ffffff22, transparent); color: var(--muted); }
+
+  .progress{ height:10px; border-radius:999px; overflow:hidden; background: #ffffff22; border:1px solid var(--border); position:relative; }
+  .progress > span{ position:absolute; inset:0 0 0 auto; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+  ul.enchants{ list-style:none; padding:0; margin:4px 0 0 0; display:flex; flex-direction:column; gap:8px; }
+  .row{ display:grid; align-items:center; grid-template-columns: 22px 1fr auto; gap:10px; padding:8px 10px; border-radius:12px; border: 1px dashed #ffffff24; background: #ffffff07; }
+  .row.conflicted { outline: 2px solid var(--danger); background:#ff63751a; }
+  .row.disabled { opacity:.45; filter:saturate(.6); }
+
+  /* ✅ Keep checkboxes visible across themes */
+  input[type="checkbox"]{
+    width:18px; height:18px; cursor:pointer;
+    accent-color: var(--accent);
+    border:1px solid var(--border);
+  }
+  input[type="checkbox"]:focus-visible,
+  input[type="checkbox"]:hover{
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .footer{ margin-top:8px; color:var(--muted); font-size:13px; display:flex; gap:8px; flex-wrap:wrap; }
+  .kbd{ padding:2px 6px; border-radius:6px; border:1px solid var(--border); background:#ffffff10; font-weight:700 }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="appbar">
+    <div class="brand">
+      <div class="logo">MC</div>
+      <h1>Minecraft Enchantments Checklist <span class="badge">1.21+ • JE &amp; BE</span></h1>
+    </div>
+    <div class="controls">
+      <div class="legend">
+        <span class="pill">Progress</span>
+        <span class="pill">Conflict</span>
+        <span class="pill">Optional</span>
+      </div>
+      <select id="filterType" class="btn">
+        <option value="all">Show: All</option>
+        <option value="Armor">Armor only</option>
+        <option value="Weapons">Weapons only</option>
+        <option value="Tools">Tools only</option>
+        <option value="Other">Other gear only</option>
+      </select>
+      <button id="toggleOptional" class="btn">Hide Optional</button>
+      <button id="toggleTheme" class="btn small" title="Toggle theme">🌙 / ☀️</button>
+      <button id="printBtn" class="btn small" title="Print">🖨 Print</button>
+      <button id="resetBtn" class="btn small" title="Reset all">↺ Reset</button>
+    </div>
+  </header>
+
+  <main id="grid"></main>
+
+  <div class="footer">
+    <span>Tips: Press <span class="kbd">Ctrl</span> + <span class="kbd">P</span> to print • Your progress is saved locally.</span>
+    <span>Sources: Minecraft Wiki (Enchantments, Best Enchantments, Mace & Frost Walker).</span>
+  </div>
+</div>
+
+<script>
+/* ---------- Data (unchanged) ---------- */
+const DATA = [
+  { title: "Armor – Helmet", cat: "Armor",
+    items: [
+      { id:"helm-mending", name:"Mending" },
+      { id:"helm-unb", name:"Unbreaking III" },
+      { id:"helm-prot", name:"Protection IV", conflict:"prot" },
+      { id:"helm-proj", name:"Projectile Protection IV", conflict:"prot", optional:true },
+      { id:"helm-blast", name:"Blast Protection IV", conflict:"prot", optional:true },
+      { id:"helm-fireprot", name:"Fire Protection IV", conflict:"prot", optional:true },
+      { id:"helm-resp", name:"Respiration III" },
+      { id:"helm-aqua", name:"Aqua Affinity", optional:true },
+      { id:"helm-thorns", name:"Thorns III", optional:true },
+    ]},
+  { title: "Armor – Chestplate", cat: "Armor",
+    items: [
+      { id:"chest-mending", name:"Mending" },
+      { id:"chest-unb", name:"Unbreaking III" },
+      { id:"chest-prot", name:"Protection IV", conflict:"prot" },
+      { id:"chest-proj", name:"Projectile Protection IV", conflict:"prot", optional:true },
+      { id:"chest-blast", name:"Blast Protection IV", conflict:"prot", optional:true },
+      { id:"chest-fireprot", name:"Fire Protection IV", conflict:"prot", optional:true },
+      { id:"chest-thorns", name:"Thorns III", optional:true },
+    ]},
+  { title: "Armor – Leggings", cat: "Armor",
+    items: [
+      { id:"leg-mending", name:"Mending" },
+      { id:"leg-unb", name:"Unbreaking III" },
+      { id:"leg-prot", name:"Protection IV", conflict:"prot" },
+      { id:"leg-proj", name:"Projectile Protection IV", conflict:"prot", optional:true },
+      { id:"leg-blast", name:"Blast Protection IV", conflict:"prot", optional:true },
+      { id:"leg-fireprot", name:"Fire Protection IV", conflict:"prot", optional:true },
+      { id:"leg-swiftsneak", name:"Swift Sneak III" },
+      { id:"leg-thorns", name:"Thorns III", optional:true },
+    ]},
+  { title: "Armor – Boots", cat: "Armor",
+    items: [
+      { id:"boot-mending", name:"Mending" },
+      { id:"boot-unb", name:"Unbreaking III" },
+      { id:"boot-prot", name:"Protection IV", conflict:"prot" },
+      { id:"boot-proj", name:"Projectile Protection IV", conflict:"prot", optional:true },
+      { id:"boot-blast", name:"Blast Protection IV", conflict:"prot", optional:true },
+      { id:"boot-fireprot", name:"Fire Protection IV", conflict:"prot", optional:true },
+      { id:"boot-ff", name:"Feather Falling IV" },
+      { id:"boot-depth", name:"Depth Strider III", conflict:"waterwalk" },
+      { id:"boot-frost", name:"Frost Walker II", conflict:"waterwalk", optional:true },
+      { id:"boot-soulspeed", name:"Soul Speed III", optional:true },
+      { id:"boot-thorns", name:"Thorns III", optional:true },
+    ]},
+  { title: "Weapons – Sword", cat: "Weapons",
+    items: [
+      { id:"sw-unb", name:"Unbreaking III" },
+      { id:"sw-mend", name:"Mending" },
+      { id:"sw-sharp", name:"Sharpness V", conflict:"sworddmg" },
+      { id:"sw-smite", name:"Smite V", conflict:"sworddmg" },
+      { id:"sw-bane", name:"Bane of Arthropods V", conflict:"sworddmg" },
+      { id:"sw-sweep", name:"Sweeping Edge III (JE)", optional:true },
+      { id:"sw-loot", name:"Looting III" },
+      { id:"sw-fire", name:"Fire Aspect II", optional:true },
+      { id:"sw-kb", name:"Knockback II", optional:true },
+    ]},
+  { title: "Weapons – Axe (as weapon)", cat: "Weapons",
+    items: [
+      { id:"ax-unb", name:"Unbreaking III" },
+      { id:"ax-mend", name:"Mending" },
+      { id:"ax-eff", name:"Efficiency V" },
+      { id:"ax-sharp", name:"Sharpness V", conflict:"axedmg" },
+      { id:"ax-smite", name:"Smite V", conflict:"axedmg" },
+      { id:"ax-bane", name:"Bane of Arthropods V", conflict:"axedmg" },
+      { id:"ax-cleave", name:"Cleaving (combat tests)", conflict:"axedmg", optional:true },
+    ]},
+  { title: "Weapons – Mace (1.21+)", cat: "Weapons",
+    items: [
+      { id:"mc-unb", name:"Unbreaking III" },
+      { id:"mc-mend", name:"Mending" },
+      { id:"mc-wind", name:"Wind Burst III" },
+      { id:"mc-fire", name:"Fire Aspect II", optional:true },
+      { id:"mc-density", name:"Density V", conflict:"macecore" },
+      { id:"mc-breach", name:"Breach IV", conflict:"macecore" },
+      { id:"mc-smite", name:"Smite V", conflict:"macecore" },
+      { id:"mc-bane", name:"Bane of Arthropods V", conflict:"macecore" },
+    ]},
+  { title: "Ranged – Bow", cat: "Weapons",
+    items: [
+      { id:"bow-inf", name:"Infinity", conflict:"bowcore" },
+      { id:"bow-mend", name:"Mending", conflict:"bowcore" },
+      { id:"bow-pow", name:"Power V" },
+      { id:"bow-unb", name:"Unbreaking III" },
+      { id:"bow-flame", name:"Flame", optional:true },
+      { id:"bow-punch", name:"Punch II", optional:true },
+    ]},
+  { title: "Ranged – Crossbow", cat: "Weapons",
+    items: [
+      { id:"xb-qc", name:"Quick Charge III" },
+      { id:"xb-multi", name:"Multishot", conflict:"xbcore" },
+      { id:"xb-pierce", name:"Piercing IV", conflict:"xbcore" },
+      { id:"xb-unb", name:"Unbreaking III" },
+      { id:"xb-mend", name:"Mending" },
+    ]},
+  { title: "Trident", cat: "Weapons",
+    items: [
+      { id:"tri-mend", name:"Mending" },
+      { id:"tri-unb", name:"Unbreaking III" },
+      { id:"tri-loyal", name:"Loyalty III", conflict:"trishoot" },
+      { id:"tri-chan", name:"Channeling", conflict:"trishoot" },
+      { id:"tri-riptide", name:"Riptide III", conflict:"trishoot" },
+      { id:"tri-imp", name:"Impaling V (JE: underwater mobs; BE: mobs in water/rain)" },
+    ]},
+  { title: "Tools – Pickaxe", cat: "Tools",
+    items: [
+      { id:"px-unb", name:"Unbreaking III" },
+      { id:"px-mend", name:"Mending" },
+      { id:"px-fort", name:"Fortune III", conflict:"touch" },
+      { id:"px-silk", name:"Silk Touch", conflict:"touch" },
+      { id:"px-eff", name:"Efficiency V" },
+    ]},
+  { title: "Tools – Shovel", cat: "Tools",
+    items: [
+      { id:"sh-unb", name:"Unbreaking III" },
+      { id:"sh-mend", name:"Mending" },
+      { id:"sh-eff", name:"Efficiency V" },
+      { id:"sh-silk", name:"Silk Touch", conflict:"touch" },
+      { id:"sh-fort", name:"Fortune III", conflict:"touch" },
+    ]},
+  { title: "Tools – Hoe", cat: "Tools",
+    items: [
+      { id:"hoe-unb", name:"Unbreaking III" },
+      { id:"hoe-mend", name:"Mending" },
+      { id:"hoe-eff", name:"Efficiency V" },
+      { id:"hoe-silk", name:"Silk Touch", conflict:"touch" },
+      { id:"hoe-fort", name:"Fortune III", conflict:"touch" },
+    ]},
+  { title: "Tools – Axe (utility)", cat: "Tools",
+    items: [
+      { id:"axu-unb", name:"Unbreaking III" },
+      { id:"axu-mend", name:"Mending" },
+      { id:"axu-eff", name:"Efficiency V" },
+      { id:"axu-sharp", name:"Sharpness V (optional)", optional:true },
+      { id:"axu-silk", name:"Silk Touch", conflict:"touch" },
+      { id:"axu-fort", name:"Fortune III", conflict:"touch" },
+    ]},
+  { title: "Fishing Rod", cat: "Tools",
+    items: [
+      { id:"rod-unb", name:"Unbreaking III" },
+      { id:"rod-mend", name:"Mending" },
+      { id:"rod-luck", name:"Luck of the Sea III" },
+      { id:"rod-lure", name:"Lure III" },
+    ]},
+  { title: "Other Gear – Shield", cat: "Other",
+    items: [
+      { id:"shd-unb", name:"Unbreaking III" },
+      { id:"shd-mend", name:"Mending" },
+    ]},
+  { title: "Other Gear – Elytra", cat: "Other",
+    items: [
+      { id:"ely-unb", name:"Unbreaking III" },
+      { id:"ely-mend", name:"Mending" },
+    ]},
+];
+
+/* ---------- Helpers (patched) ---------- */
+const el = (tag, props = {}, ...kids) => {
+  const node = document.createElement(tag);
+  const { dataset, className, ...rest } = props;
+  if (className) node.className = className;
+  Object.assign(node, rest);
+  if (dataset) for (const [k, v] of Object.entries(dataset)) node.dataset[k] = v;
+  kids.forEach(k => node.append(k));
+  return node;
+};
+const save = () => localStorage.setItem("mc_enchant_checks", JSON.stringify(state));
+const load = () => JSON.parse(localStorage.getItem("mc_enchant_checks")||"{}");
+const prefersLight = () => window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+
+/* ---------- State ---------- */
+let state = load();
+let hideOptional = false;
+
+/* ---------- Render ---------- */
+const grid = document.getElementById("grid");
+
+function render(){
+  grid.innerHTML = "";
+  const filter = document.getElementById("filterType").value;
+
+  DATA.forEach(section => {
+    if(filter !== "all" && section.cat !== filter) return;
+
+    const card = el("section", { className:"card", dataset:{ cat: section.cat } });
+    const h2 = el("h2", {}, section.title, el("span",{className:"badge"}, section.cat));
+    const progress = el("div",{className:"progress"}, el("span"));
+    const list = el("ul", {className:"enchants"});
+
+    section.items.forEach(item => {
+      if(hideOptional && item.optional) return;
+
+      const checked = !!state[item.id];
+      const li = el("li", {className:"row"+(item.optional?" optional":"")});
+      if(item.conflict) li.classList.add("conflict");
+
+      const cb = el("input", {type:"checkbox", checked});
+      cb.addEventListener("change", () => {
+        state[item.id] = cb.checked;
+        handleConflicts(section, item, cb.checked);
+        updateProgress(card);
+        save();
+      });
+
+      const name = el("div", {className:"name"}, item.name);
+      const meta = el("div", {className:"meta"});
+      if(item.optional) meta.append(el("span",{className:"pill"}, "Optional"));
+      if(item.name.includes("(JE)")) meta.append(el("span",{className:"pill"}, "JE"));
+      if(item.name.includes("(BE)")) meta.append(el("span",{className:"pill"}, "BE"));
+      if(item.conflict) meta.append(el("span",{className:"pill"}, "Conflict"));
+
+      li.append(cb, name, meta);
+      li.dataset.id = item.id;
+      li.dataset.conflict = item.conflict || "";
+      list.append(li);
+    });
+
+    card.append(h2, progress, list);
+    grid.append(card);
+    updateProgress(card);
+    applyConflictStyles(card);
+  });
+}
+
+function rowsIn(card){ return Array.from(card.querySelectorAll("li.row")); }
+
+function handleConflicts(section, toggledItem, isChecked){
+  const card = [...document.querySelectorAll(".card")]
+    .find(c => c.querySelector("h2").textContent.startsWith(section.title));
+  if(!card || !toggledItem.conflict) return;
+
+  rowsIn(card).forEach(row => {
+    const conflictKey = row.dataset.conflict;
+    if(conflictKey && conflictKey === toggledItem.conflict){
+      const id = row.dataset.id;
+      const cb = row.querySelector('input[type="checkbox"]');
+      if(id !== toggledItem.id && isChecked){
+        cb.checked = false;
+        state[id] = false;
+      }
+    }
+  });
+  applyConflictStyles(card);
+  save();
+}
+
+function applyConflictStyles(card){
+  const rows = rowsIn(card);
+  const groups = {};
+  rows.forEach(r=>{
+    const key = r.dataset.conflict;
+    if(!key) return;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  });
+  Object.values(groups).forEach(grp=>{
+    const active = grp.filter(r=>r.querySelector('input[type="checkbox"]').checked);
+    grp.forEach(r=>{
+      const isActive = r.querySelector('input').checked;
+      r.classList.toggle("conflicted", active.length>0 && !isActive);
+      r.classList.toggle("disabled",   active.length>0 && !isActive);
+    });
+  });
+}
+
+function updateProgress(card){
+  const lis = Array.from(card.querySelectorAll("li.row"));
+  const total = lis.length;
+  const done = lis.filter(li=>li.querySelector('input').checked).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  card.querySelector(".progress > span").style.width = pct + "%";
+}
+
+/* ---------- Controls ---------- */
+document.getElementById("filterType").addEventListener("change", render);
+document.getElementById("toggleOptional").addEventListener("click", (e)=>{
+  hideOptional = !hideOptional;
+  e.currentTarget.textContent = hideOptional ? "Show Optional" : "Hide Optional";
+  render();
+});
+document.getElementById("toggleTheme").addEventListener("click", ()=>{
+  document.body.classList.toggle("light");
+  localStorage.setItem("mc_enchant_theme", document.body.classList.contains("light") ? "light" : "dark");
+});
+document.getElementById("printBtn").addEventListener("click", ()=> window.print());
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(confirm("Reset all checkboxes?")){
+    state = {};
+    save();
+    render();
+  }
+});
+
+/* ---------- Init ---------- */
+(function init(){
+  const savedTheme = localStorage.getItem("mc_enchant_theme");
+  if(savedTheme === "light" || (!savedTheme && window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches))
+    document.body.classList.add("light");
+  render();
+})();
+</script>
+</body>
+</html>
